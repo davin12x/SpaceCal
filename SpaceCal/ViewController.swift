@@ -1,0 +1,120 @@
+//
+//  ViewController.swift
+//  SpaceCal
+//
+//  Created by Grovers on 2016-11-26.
+//  Copyright © 2016 Lalit Bagga. All rights reserved.
+//
+
+import UIKit
+import AVFoundation
+
+class ViewController: UIViewController {
+    
+    @IBOutlet weak var outputLbl: UILabel!
+    
+    var btnSound: AVAudioPlayer!
+
+    enum Operation: String {
+        case Divide = "/"
+        case Multiply = "*"
+        case Subtract = "-"
+        case Add = "+"
+        case Empty = "Empty"
+    }
+    
+    var runningNumber = ""
+    var leftValStr = ""
+    var rightValStr = ""
+    var currentOperation:Operation = Operation.Empty
+    var result = ""
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let path = Bundle.main.path(forResource: "btn", ofType: "wav")
+        let soundUrl = NSURL(fileURLWithPath: path!)
+        
+        do {
+            try btnSound = AVAudioPlayer(contentsOf: soundUrl as URL)
+            btnSound.prepareToPlay()
+        } catch let err as NSError {
+            print(err.debugDescription)
+        }
+    }
+
+
+    @IBAction func numberPressed(btn:UIButton) {
+        playSound()
+        runningNumber += "\(btn.tag)"
+        outputLbl.text = runningNumber
+    }
+    
+    @IBAction func onDividePressed(sender: AnyObject) {
+        processOperation(op: Operation.Divide)
+    }
+    
+    @IBAction func onMultiplyPressed(sender: AnyObject) {
+        processOperation(op: Operation.Multiply)
+    }
+    
+    @IBAction func onSubtractPressed(sender: AnyObject) {
+        processOperation(op: Operation.Subtract)
+    }
+    
+    @IBAction func onAddPressed(sender: AnyObject) {
+        processOperation(op: Operation.Add)
+    }
+    
+    @IBAction func onEqualPressed(sender: AnyObject) {
+        processOperation(op: currentOperation)
+    }
+
+    
+    func processOperation(op: Operation) {
+        
+        if currentOperation != Operation.Empty {
+            //Run some math
+            
+            //A user selected an operator, but then selected another operator without
+            //first entering a number
+            if runningNumber != "" {
+                rightValStr = runningNumber
+                runningNumber = ""
+                
+                if currentOperation == Operation.Multiply {
+                    result = "\(Double(leftValStr)! * Double(rightValStr)!)"
+                } else if currentOperation == Operation.Divide {
+                    result = "\(Double(leftValStr)! / Double(rightValStr)!)"
+                } else if currentOperation == Operation.Subtract {
+                    result = "\(Double(leftValStr)! - Double(rightValStr)!)"
+                } else if currentOperation == Operation.Add {
+                    result = "\(Double(leftValStr)! + Double(rightValStr)!)"
+                }
+                
+                leftValStr = result
+                outputLbl.text = result
+            }
+            
+            
+            currentOperation = op
+            
+        } else {
+            //This is the first time an operator has been pressed
+            leftValStr = runningNumber
+                  print(leftValStr)
+            runningNumber = ""
+            currentOperation = op
+        }
+    }
+    
+    func playSound() {
+        if btnSound.isPlaying {
+            btnSound.stop()
+        }
+        
+        btnSound.play()
+    }
+
+
+}
+
